@@ -60,14 +60,16 @@ def execute(agent):
         agent.env.render()
         num_of_tries += 1
 
+    return num_of_tries
+
 
 def main():
     env = GridEnvironment(size=4, goal_position=[3, 3])
     agent = DeterministicAgent(env)
-    execute(agent)
+    num_of_tries = execute(agent)
 
     if agent.env.is_done():
-        print("done!!")
+        print(f"done in {num_of_tries} steps")
         env.render()
     else:
         print("failed!!")
