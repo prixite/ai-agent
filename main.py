@@ -1,3 +1,4 @@
+import random
 import numpy as np
 
 
@@ -51,6 +52,14 @@ class DeterministicAgent:
             return 2
 
 
+class RandomAgent:
+    def __init__(self, env):
+        self.env = env
+
+    def action(self):
+        return random.randint(0, 3)
+
+
 def execute(agent):
     num_of_tries = 0
 
@@ -66,6 +75,7 @@ def execute(agent):
 def main():
     env = GridEnvironment(size=4, goal_position=[3, 3])
     agent = DeterministicAgent(env)
+    agent = RandomAgent(env)
     num_of_tries = execute(agent)
 
     if agent.env.is_done():
