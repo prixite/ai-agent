@@ -1,3 +1,4 @@
+from logging import Handler
 import random
 import numpy as np
 from pydantic import BaseModel
@@ -35,6 +36,34 @@ class GridEnvironment:
                     print("A", end=" ")  # Agent's position
                 elif [i, j] == self.goal_position:
                     print("G", end=" ")  # Goal position
+                else:
+                    print(".", end=" ")
+            print()
+
+
+class HostileEnvironment(GridEnvironment):
+    def __init__(self, size, goal_position, hostile_positions):
+        super().__init__(size, goal_position)
+        self.hostile_positions = hostile_positions
+
+    def reset(self):
+        self.agent_position = [0, 0]
+        return np.array(self.agent_position)
+
+    def step(self, action):
+        super().step(action)
+        if self.agent_position in self.hostile_positions:
+            self.agent_position = [0, 0]
+
+    def render(self):
+        for i in range(self.size):
+            for j in range(self.size):
+                if [i, j] == self.agent_position:
+                    print("A", end=" ")  # Agent's position
+                elif [i, j] == self.goal_position:
+                    print("G", end=" ")  # Goal position
+                elif [i, j] in self.hostile_positions:
+                    print("H", end=" ")  # Hostile position
                 else:
                     print(".", end=" ")
             print()
@@ -117,9 +146,12 @@ def execute(agent):
 
 def main():
     env = GridEnvironment(size=4, goal_position=[3, 3])
+    env = HostileEnvironment(
+        size=4, goal_position=[3, 3], hostile_positions=[[3, 0], [2, 1]]
+    )
+    agent = OpenAIAgent(env)
     agent = DeterministicAgent(env)
     agent = RandomAgent(env)
-    agent = OpenAIAgent(env)
     num_of_tries = execute(agent)
 
     if agent.env.is_done():
