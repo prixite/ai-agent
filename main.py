@@ -79,7 +79,6 @@ class OpenAIAgent:
             "You will be given your current position and the target position. "
             "You need to choose the best action to move closer to the target. "
             "Actions are: 0 (UP), 1 (DOWN), 2 (LEFT), 3 (RIGHT)."
-            "Choose action from 0 to 3. The output should be a single number."
         )
 
         completion = self.client.beta.chat.completions.parse(
@@ -91,7 +90,6 @@ class OpenAIAgent:
                     "content": (
                         f"current position: {self.env.agent_position},"
                         f"target position: {self.env.goal_position}. "
-                        "Give output in the range 0 to 3."
                     ),
                 },
             ],
