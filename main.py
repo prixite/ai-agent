@@ -1,4 +1,3 @@
-from logging import Handler
 import random
 import numpy as np
 from pydantic import BaseModel
@@ -11,6 +10,7 @@ class GridEnvironment:
         self.size = size
         self.goal_position = goal_position
         self.agent_position = [0, 0]  # Agent starts at top-left corner
+        self.hostile_positions = []
 
     def reset(self):
         self.agent_position = [0, 0]
@@ -73,7 +73,7 @@ class DeterministicAgent:
     def __init__(self, env):
         self.env = env
 
-    def action(self):
+    def choose_action(self):
         if self.env.agent_position[0] < self.env.goal_position[0]:
             return 1
         elif self.env.agent_position[0] > self.env.goal_position[0]:
@@ -88,7 +88,7 @@ class RandomAgent:
     def __init__(self, env):
         self.env = env
 
-    def action(self):
+    def choose_action(self):
         return random.randint(0, 3)
 
 
@@ -101,7 +101,7 @@ class OpenAIAgent:
         self.env = env
         self.client = OpenAI()
 
-    def action(self):
+    def choose_action(self):
         prompt = (
             "You are an agent and your goal is to reach the target position. "
             f"The grid size is {self.env.size}x{self.env.size}. "
@@ -138,7 +138,7 @@ def execute(agent):
     num_of_tries = 0
 
     while not agent.env.is_done() and num_of_tries < 100:
-        action = agent.action()
+        action = agent.choose_action()
         agent.env.step(action)
         agent.env.render()
         num_of_tries += 1
@@ -151,9 +151,9 @@ def main():
     env = HostileEnvironment(
         size=4, goal_position=[3, 3], hostile_positions=[[3, 0], [2, 1]]
     )
-    agent = DeterministicAgent(env)
     agent = RandomAgent(env)
     agent = OpenAIAgent(env)
+    agent = DeterministicAgent(env)
     num_of_tries = execute(agent)
 
     if agent.env.is_done():
