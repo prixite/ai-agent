@@ -104,7 +104,8 @@ class OpenAIAgent:
     def action(self):
         prompt = (
             "You are an agent and your goal is to reach the target position. "
-            "The grid size is {self.env.size}x{self.env.size}. "
+            f"The grid size is {self.env.size}x{self.env.size}. "
+            "The grid has hostile positions that you need to avoid. "
             "You will be given your current position and the target position. "
             "You need to choose the best action to move closer to the target. "
             "Actions are: 0 (UP), 1 (DOWN), 2 (LEFT), 3 (RIGHT)."
@@ -119,6 +120,7 @@ class OpenAIAgent:
                     "content": (
                         f"current position: {self.env.agent_position},"
                         f"target position: {self.env.goal_position}. "
+                        f"hostile positions: {self.env.hostile_positions}. "
                     ),
                 },
             ],
@@ -149,9 +151,9 @@ def main():
     env = HostileEnvironment(
         size=4, goal_position=[3, 3], hostile_positions=[[3, 0], [2, 1]]
     )
-    agent = OpenAIAgent(env)
     agent = DeterministicAgent(env)
     agent = RandomAgent(env)
+    agent = OpenAIAgent(env)
     num_of_tries = execute(agent)
 
     if agent.env.is_done():
