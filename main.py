@@ -1,5 +1,8 @@
 import random
 import numpy as np
+from pydantic import BaseModel
+
+from openai import OpenAI
 
 
 class GridEnvironment:
@@ -60,6 +63,48 @@ class RandomAgent:
         return random.randint(0, 3)
 
 
+class ActionResponse(BaseModel):
+    action: int
+
+
+class OpenAIAgent:
+    def __init__(self, env):
+        self.env = env
+        self.client = OpenAI()
+
+    def action(self):
+        prompt = (
+            "You are an agent and your goal is to reach the target position. "
+            "The grid size is {self.env.size}x{self.env.size}. "
+            "You will be given your current position and the target position. "
+            "You need to choose the best action to move closer to the target. "
+            "Actions are: 0 (UP), 1 (DOWN), 2 (LEFT), 3 (RIGHT)."
+            "Choose action from 0 to 3. The output should be a single number."
+        )
+
+        completion = self.client.beta.chat.completions.parse(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": prompt},
+                {
+                    "role": "user",
+                    "content": (
+                        f"current position: {self.env.agent_position},"
+                        f"target position: {self.env.goal_position}. "
+                        "Give output in the range 0 to 3."
+                    ),
+                },
+            ],
+            response_format=ActionResponse,
+        )
+
+        response: ActionResponse | None = completion.choices[0].message.parsed
+        if response:
+            return response.action
+        else:
+            return 0
+
+
 def execute(agent):
     num_of_tries = 0
 
@@ -76,6 +121,7 @@ def main():
     env = GridEnvironment(size=4, goal_position=[3, 3])
     agent = DeterministicAgent(env)
     agent = RandomAgent(env)
+    agent = OpenAIAgent(env)
     num_of_tries = execute(agent)
 
     if agent.env.is_done():
